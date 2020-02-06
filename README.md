@@ -42,11 +42,11 @@ For more information see: [tutorial.ipynb](https://github.com/amaiya/torchfit/bl
 
 ## Installation
 
-After ensuring PyTorch is installed, install `TorchFit` with:
+After ensuring [PyTorch is installed](https://pytorch.org/get-started/locally/), install `TorchFit` with:
 
 ```
 pip3 install torchfit
 
 ```
 
-<!-- pip3 install torch==1.3.1+cu100 torchvision==0.4.2+cu100 -f https://download.pytorch.org/whl/torch_stable.html -->
+<!-- pip3 install pillow==6.2.2 torch==1.3.1+cu100 torchvision==0.4.2+cu100 -f https://download.pytorch.org/whl/torch_stable.html -->
