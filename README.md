@@ -26,13 +26,13 @@ learner.find_lr()
 # train using learning rate
 learner.fit_onecycle(1e-4, 3)
 
-# plot training vs. validaiton loss
+# plot training vs. validation loss
 learner.plot('loss')
 
 # make predictions
 y_pred = learner.predict(test_loader)
 
-# save model and reload lader
+# save model and reload later
 learner.save('/tmp/mymodel')
 learer.load('/tmp/mymodel')
 ```
