@@ -37,10 +37,10 @@ learner.save('/tmp/mymodel')
 learer.load('/tmp/mymodel')
 ```
 
-For more information see: `tutorial.ipynb`
+For more information see: [tutorial.ipynb](https://github.com/amaiya/torchfit/blob/master/examples/tutorial.ipynb)
 
 
-## Usage
+## Installation
 
 After ensuring PyTorch is installed, install `TorchFit` with:
 
