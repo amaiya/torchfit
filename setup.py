@@ -8,7 +8,7 @@ exec(open('torchfit/version.py').read())
 
 
 setup(
-  name = 'torcfit',
+  name = 'torchfit',
   packages = setuptools.find_packages(),
   version = __version__,
   license='MIT',
