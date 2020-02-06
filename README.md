@@ -23,7 +23,7 @@ learner = torchfit.Learner(model, train_loader, val_loader=val_loader)
 # estimate LR using fastai-like Learning Rate Finder
 learner.find_lr()
 
-# train using learning rate
+# train using 1cycle learning rate policy
 learner.fit_onecycle(1e-4, 3)
 
 # plot training vs. validation loss
