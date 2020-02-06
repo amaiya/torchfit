@@ -30,7 +30,7 @@ learner.fit_onecycle(1e-4, 3)
 learner.plot('loss')
 
 # make predictions
-y_pred = learner.predict(test_data_loader)
+y_pred = learner.predict(test_loader)
 
 # save model and reload lader
 learner.save('/tmp/mymodel')
