@@ -9,12 +9,9 @@
 
 
 # normal PyTorch stuff
-train_loader = load_your_training_data_loader()
-val_loader = load_your_validation_data_loader()
+train_loader = create_your_training_data_loader()
+val_loader = create_your_validation_data_loader()
 model = create_your_pytorch_model()
-
-def accuracy(y_true, y_pred):
-    return np.mean(y_true.numpy() == np.argmax(y_pred.numpy(), axis=1))
 
 # wrap model and data in torchfit.Learner
 import torchfit
