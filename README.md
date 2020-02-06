@@ -2,7 +2,7 @@
 
 `TorchFit` is a bare-bones, minimalistic *training-helper* for **PyTorch** that exposes an easy-to-use `fit` method in the style of **fastai** and **Keras**.  
 
-`TorchFit` is intended to be easy-to-use with a tiny footprint and as little bloat as possible. It is particularly well-suited to those new to PyTorch trying to train models. For more complex training scnenarios (e.g., training GANs, multi-node GPU training), [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning) is highly recommended.
+`TorchFit` is intended to be easy-to-use with a tiny footprint and as little bloat as possible. It is particularly well-suited to those that are new to training models in PyTorch. For more complex training scenarios (e.g., training GANs, multi-node GPU training), [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning) is highly recommended.
 
 
 ## Usage
