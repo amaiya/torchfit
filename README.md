@@ -42,7 +42,11 @@ For more information see: `tutorial.ipynb`
 
 ## Usage
 
+After ensuring PyTorch is installed, install `TorchFit` with:
+
 ```
 pip3 install torchfit
 
 ```
+
+<!-- pip3 install torch==1.3.1+cu100 torchvision==0.4.2+cu100 -f https://download.pytorch.org/whl/torch_stable.html -->
