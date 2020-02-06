@@ -8,12 +8,16 @@ from functools import partial
 import tempfile
 import warnings
 
+import numpy as np
 from matplotlib import pyplot as plt
 from .utils import add_metrics_to_log, log_to_message, ProgressBar, History
 
 
 DEFAULT_LOSS = CrossEntropyLoss()
 DEFAULT_OPTIMIZER = partial(optim.SGD, lr=0.001, momentum=0.9)
+def accuracy(y_true, y_pred):
+    return np.mean(y_true.numpy() == np.argmax(y_pred.numpy(), axis=1))
+DEFAULT_METRIC = accuracy
 
 SCHED_LOCATIONS = { 'LambdaLR': 'epochlevel',
                     'MultiplicativeLR': 'epochlevel',
@@ -32,9 +36,9 @@ class Learner():
 
     
     def __init__(self, model, train_loader, val_loader=None,
-                 loss=None,      # default is CrossEntropy
-                 optimizer=None, # default is SGD 
-                 metrics=None, 
+                 loss=None,        # default is crossentropy
+                 optimizer=None,    # default sgd
+                 metrics=[accuracy], # default is accuracy
                  seed=None,
                  device=None,
                  use_amp=False,
@@ -47,9 +51,9 @@ class Learner():
           model (nn.Module): the network
           train_loader(DataLoader):  training dataset
           val_loader(DataLoader):  validation dataset
-          loss(nn._Loss): loss function. Default is CrossEntropy.
-          optimizer(Optimizer):  optimizer.  Default is SGD.
-          metrics(list): list of functions for computing metrics. Default is None.
+          loss(nn._Loss): loss function. Default is CrossEntropy if None.
+          optimizer(Optimizer):  optimizer.  Default is SGD if None.
+          metrics(list): list of functions for computing metrics. Default is accuracy.
           seed(int): random seed
           device(str): cuda or cpu.  If None, inferred automatically.
           use_amp(bool): train using automatic mixed precision.  default:False

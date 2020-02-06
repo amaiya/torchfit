@@ -12,6 +12,7 @@
 train_loader = load_your_training_data_loader()
 val_loader = load_your_validation_data_loader()
 model = create_your_pytorch_model()
+
 def accuracy(y_true, y_pred):
     return np.mean(y_true.numpy() == np.argmax(y_pred.numpy(), axis=1))
 
