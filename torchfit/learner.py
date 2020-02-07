@@ -56,6 +56,9 @@ class Learner():
           metrics(list): list of functions for computing metrics. Default is accuracy.
           seed(int): random seed
           device(str): cuda or cpu.  If None, inferred automatically.
+                       To select a specific GPU, use 'cuda:N' where N is the
+                       integer index of the GPU on your system (e.g., 1 is the 
+                       second GPU).
           use_amp(bool): train using automatic mixed precision.  default:False
           amp_level(str): opt_level for automatic mixed precision.  default:'O1'
                           https://nvidia.github.io/apex/amp.html
