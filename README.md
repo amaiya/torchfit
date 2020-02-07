@@ -37,7 +37,7 @@ learner.save('/tmp/mymodel')
 learer.load('/tmp/mymodel')
 ```
 
-### For more information see the [Tutorial Notebook](https://github.com/amaiya/torchfit/blob/master/examples/tutorial.ipynb)
+### For more information, see the [Tutorial Notebook](https://github.com/amaiya/torchfit/blob/master/examples/tutorial.ipynb).
 
 
 ## Installation
