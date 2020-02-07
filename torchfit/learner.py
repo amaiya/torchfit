@@ -43,6 +43,7 @@ class Learner():
                  device=None,
                  use_amp=False,
                  amp_level='O1',
+                 gpus=None,
                  verbose=1):
         """
         Learner constructor
@@ -55,10 +56,13 @@ class Learner():
           optimizer(Optimizer):  optimizer.  Default is SGD if None.
           metrics(list): list of functions for computing metrics. Default is accuracy.
           seed(int): random seed
-          device(str): cuda or cpu.  If None, inferred automatically.
+          device(str): 'cuda' or 'cpu' or 'cuda:N' where N is integer of GPU
+                       If None, inferred automatically.
                        To select a specific GPU, use 'cuda:N' where N is the
                        integer index of the GPU on your system (e.g., 1 is the 
                        second GPU).
+          gpus (list of ints):  list of GPUs to use
+                                This overrides value supplied for device argument
           use_amp(bool): train using automatic mixed precision.  default:False
           amp_level(str): opt_level for automatic mixed precision.  default:'O1'
                           https://nvidia.github.io/apex/amp.html
@@ -69,10 +73,22 @@ class Learner():
             torch.manual_seed(seed)
 
         # set device
-        if device is None:
-           self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if gpus is not None:
+            if type(gpus) != list: raise ValueError('gpus must be list of ints')
+            if device is not None:
+                warnings.warn('device argument is being ignored - using gpus argument')
+            if len(gpus) == 1:
+                self.gpus = None
+                self.device = 'cuda:%s' % (gpus[0])
+            else:
+                self.gpus = gpus
+                self.device = 'cuda'
         else:
-            self.device = device
+            if device is None:
+               self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            else:
+                self.device = device
+            self.gpus = gpus
 
         # instance variables
         self.model = model.to(self.device)
@@ -120,6 +136,12 @@ class Learner():
                 """
                 raise RuntimeError(str(e)+'\n\n'+msg)
             self.amp_init=True
+
+        # multi-gpu
+        if self.gpus is not None and len(self.gpus) > 1:
+            self.model = torch.nn.DataParallel(self.model, device_ids=self.gpus)
+
+
 
 
 
