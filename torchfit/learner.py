@@ -301,6 +301,21 @@ class Learner():
         return preds.numpy()
 
 
+    def predict_example(self, data, preproc_fn=None, labels=[]):
+        if preproc_fn is not None:
+            data = preproc_fn(data)
+        if type(data) == list:
+            data = [d.to(self.device) for d in data]
+        else:
+            data = data.to(self.device)
+        pred = self.model(data)
+        pred = pred.cpu().detach().numpy()
+        if labels:
+            return labels[np.argmax(pred)]
+        else:
+            return pred
+
+
     def _predict(self, data_loader):
         """
         Generates output predictions for the input samples
