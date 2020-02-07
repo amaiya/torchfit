@@ -199,7 +199,10 @@ class Learner():
                 self.model.train()
 
                 # get batch
-                X_batch = batch_data[0].to(self.device) 
+                if type(batch_data[0]) == list:
+                    X_batch = [x.to(self.device) for x in batch_data[0]]
+                else:
+                    X_batch = batch_data[0].to(self.device) 
                 y_batch = batch_data[1].to(self.device)
 
                 # forward and backward pass
@@ -317,9 +320,12 @@ class Learner():
         with torch.no_grad():
             for batch_i, batch_data in enumerate(data_loader):
                 self.model.eval()
+
                 # Predict on batch
-                #X_batch = Variable(batch_data[0])
-                X_batch = batch_data[0].to(self.device)
+                if type(batch_data[0]) == list:
+                    X_batch = [x.to(self.device) for x in batch_data[0]]
+                else:
+                    X_batch = batch_data[0].to(self.device) 
                 y_batch = batch_data[1].to(self.device)
                 y_batch_pred = self.model(X_batch).data
 

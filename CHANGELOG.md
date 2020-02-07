@@ -8,10 +8,11 @@ Most recent releases are shown at the top. Each release shows:
 
 
 
-## 0.2.0 (TBD)
+## 0.2.0 (2020-02-07)
 
 ### New:
 - Added `gpus` parameter to `Learner` to enable multi-gpu training.
+- Support lists of inputs (e.g., [text, offsets] for `EmbeddingBag`)
 
 ### Changed:
 - N/A
