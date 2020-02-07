@@ -7,6 +7,19 @@ Most recent releases are shown at the top. Each release shows:
 - **Fixed**: Bug fixes that don't change documented behaviour
 
 
+## 0.2.1 (2020-02-07)
+
+### New:
+- Support lists of inputs (e.g., [text, offsets] for `EmbeddingBag`)
+- Added `predict_example` method
+- Added text classification example
+
+### Changed:
+- N/A
+
+### Fixed:
+- N/A
+
 
 ## 0.2.0 (2020-02-07)
 
