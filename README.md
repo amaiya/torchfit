@@ -16,11 +16,11 @@ val_loader = create_your_validation_data_loader()
 test_loader = create_your_test_data_loader()
 model = create_your_pytorch_model()
 
-# wrap model and data in torchfit.Learner
+# wrap model and data in Learner
 import torchfit
 learner = torchfit.Learner(model, train_loader, val_loader=val_loader)
 
-# estimate LR using fastai-like Learning Rate Finder
+# estimate LR using Learning Rate Finder
 learner.find_lr()
 
 # train using 1cycle learning rate policy
@@ -29,7 +29,7 @@ learner.fit_onecycle(1e-4, 3)
 # plot training vs. validation loss
 learner.plot('loss')
 
-# make predictions
+# make predictions as easy as in Keras
 y_pred = learner.predict(test_loader)
 
 # save model and reload later
