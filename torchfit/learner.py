@@ -151,11 +151,11 @@ class Learner():
         return self.model(x)
 
 
-    def compute_loss(self, output, targets):
+    def compute_loss(self, outputs, targets):
         """
         subclass should override for non-standard scenarios
         """
-        return self.loss(output, targets)
+        return self.loss(outputs, targets)
 
 
     def train_step(self, batch, batch_idx):
@@ -163,7 +163,7 @@ class Learner():
         subclass should override for non-standard training steps
         """
         # extract data from batch
-        if type(batch[0]) == list:
+        if isinstance(batch[0], (list, tuple)):
             X_batch = [x.to(self.device) for x in batch[0]]
         else:
             X_batch = batch[0].to(self.device) 
@@ -174,7 +174,7 @@ class Learner():
 
         # compute loss
         batch_loss = self.compute_loss(outputs, y_batch)
-        return {'loss': batch_loss, 'x':X_batch, 'targets':y_batch, 'outputs': outputs}
+        return {'loss': batch_loss, 'targets':y_batch, 'outputs': outputs}
 
 
     def validation_step(self, batch, batch_idx):
@@ -248,7 +248,6 @@ class Learner():
                 self.model.train()
 
                 dct = self.train_step(batch_data, batch_i)
-                X_batch = dct['x']
                 y_batch = dct['targets']
                 y_batch_pred = dct['outputs']
                 batch_loss = dct['loss']
@@ -331,7 +330,7 @@ class Learner():
 
 
 
-    def predict(self, data_loader):
+    def predict(self, data_loader, return_targets=False):
         """Generates output predictions for the input samples.
 
         Args:
@@ -339,10 +338,14 @@ class Learner():
         Returns:      
           np.ndarray:  NumPy array of predictions
         """
-        preds, _, _ = self._predict(data_loader)
+        preds, _, targets = self._predict(data_loader)
         if self.device != 'cpu':
             preds = preds.cpu().detach()
-        return preds.numpy()
+            targets = targets.cpu().detach()
+        if return_targets:
+            return (preds.numpy(), targets.numpy())
+        else:
+            return preds.numpy()
 
 
     def predict_example(self, data, preproc_fn=None, labels=[]):
@@ -388,7 +391,6 @@ class Learner():
                     dct = self.test_step(batch_data, batch_i)
                 else:
                     dct = self.validation_step(batch_data, batch_i)
-                X_batch = dct['x']
                 y_batch = dct['targets']
                 y_batch_pred = dct['outputs']
                 batch_loss = dct['loss']
@@ -460,7 +462,8 @@ class Learner():
         except: pass
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
-            from torch_lr_finder import LRFinder
+            #from torch_lr_finder import LRFinder
+            from .lr_finder import LRFinder
 
         opt = self.optimizer
 

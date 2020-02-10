@@ -1,6 +1,8 @@
 import numpy as np
 import sys
 from collections import OrderedDict
+from matplotlib import pyplot as plt
+
 
 
 class History():
@@ -32,6 +34,14 @@ class History():
         return self.epoch_log and key in self.epoch_log[0]
     def has_batch_key(self, key):
         return key in self.batch_log
+
+
+def show_image(img_path):
+    if not os.path.isfile(img_path):
+        raise ValueError('%s is not valid file' % (img_path))
+    img = plt.imread(img_path)
+    out = plt.imshow(img)
+    return out
 
 
 #-------------------------------------------------------------------------------
