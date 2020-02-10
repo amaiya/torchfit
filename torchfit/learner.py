@@ -35,7 +35,7 @@ SCHED_LOCATIONS = { 'LambdaLR': 'epochlevel',
 class Learner():
 
     
-    def __init__(self, model, train_loader, val_loader=None,
+    def __init__(self, model, train_loader=None, val_loader=None,
                  loss=None,        # default is crossentropy
                  optimizer=None,    # default sgd
                  metrics=[accuracy], # default is accuracy
@@ -138,10 +138,57 @@ class Learner():
             self.amp_init=True
 
         # multi-gpu
+        self.multigpu = False
         if self.gpus is not None and len(self.gpus) > 1:
             self.model = torch.nn.DataParallel(self.model, device_ids=self.gpus)
+            self.multigpu = True
 
 
+    def forward(self, x):
+        """
+        subclass should override for non-standard forwards
+        """
+        return self.model(x)
+
+
+    def compute_loss(self, output, targets):
+        """
+        subclass should override for non-standard scenarios
+        """
+        return self.loss(output, targets)
+
+
+    def train_step(self, batch, batch_idx):
+        """
+        subclass should override for non-standard training steps
+        """
+        # extract data from batch
+        if type(batch[0]) == list:
+            X_batch = [x.to(self.device) for x in batch[0]]
+        else:
+            X_batch = batch[0].to(self.device) 
+        y_batch = batch[1].to(self.device)
+
+        # forward pass
+        outputs = self.forward(X_batch)
+
+        # compute loss
+        batch_loss = self.compute_loss(outputs, y_batch)
+        return {'loss': batch_loss, 'x':X_batch, 'targets':y_batch, 'outputs': outputs}
+
+
+    def validation_step(self, batch, batch_idx):
+        """
+        subclass should override for non-standard steps
+        """
+        return self.train_step(batch, batch_idx)
+    
+
+    def test_step(self, batch, batch_idx):
+        """
+        subclass should override for non-standard setps
+        """
+        return self.train_step(batch, batch_idx)
 
 
 
@@ -158,6 +205,8 @@ class Learner():
         Returns:
           History:  History object containing training history
         """
+        self._check_loader()
+
         # history
         self.hist = History()
 
@@ -198,22 +247,17 @@ class Learner():
             for batch_i, batch_data in enumerate(self.train_loader):
                 self.model.train()
 
-                # get batch
-                if type(batch_data[0]) == list:
-                    X_batch = [x.to(self.device) for x in batch_data[0]]
-                else:
-                    X_batch = batch_data[0].to(self.device) 
-                y_batch = batch_data[1].to(self.device)
+                dct = self.train_step(batch_data, batch_i)
+                X_batch = dct['x']
+                y_batch = dct['targets']
+                y_batch_pred = dct['outputs']
+                batch_loss = dct['loss']
 
-                # forward and backward pass
-                y_batch_pred = self.model(X_batch)
-                batch_loss = self.loss(y_batch_pred, y_batch)
                 if self.use_amp:
                     with amp.scale_loss(batch_loss, opt) as scaled_loss:
                         scaled_loss.backward()
                 else:
                     batch_loss.backward()
-                #batch_loss.backward()
 
                 if (batch_i+1) % accumulation_steps == 0:
                     opt.step()
@@ -316,13 +360,17 @@ class Learner():
             return pred
 
 
-    def _predict(self, data_loader):
+    def _predict(self, data_loader, test=False):
         """
         Generates output predictions for the input samples
         along with returning loss and ground truth labels
 
         Args:
             data_loader: DataLoader instance
+            test(bool): If True, self.test_step is called
+                        instead of self.validation_step.
+                        The loss computation might be omitted
+                        if self.test_step is overridden, for example.
         Returns:
           (Tensor, float, Tensor): prediction Tensor, loss, ground truth Tensor
         """
@@ -336,23 +384,22 @@ class Learner():
             for batch_i, batch_data in enumerate(data_loader):
                 self.model.eval()
 
-                # Predict on batch
-                if type(batch_data[0]) == list:
-                    X_batch = [x.to(self.device) for x in batch_data[0]]
+                if test:
+                    dct = self.test_step(batch_data, batch_i)
                 else:
-                    X_batch = batch_data[0].to(self.device) 
-                y_batch = batch_data[1].to(self.device)
-                y_batch_pred = self.model(X_batch).data
+                    dct = self.validation_step(batch_data, batch_i)
+                X_batch = dct['x']
+                y_batch = dct['targets']
+                y_batch_pred = dct['outputs']
+                batch_loss = dct['loss']
+                batch_loss = self.loss(y_batch_pred, y_batch)
+                total_loss += batch_loss.item()
 
                 # shapes
                 pred_shape = (n,) if len(y_batch_pred.size()) == 1 \
                                   else (n,) + y_batch_pred.size()[1:]
                 true_shape = (n,) if len(y_batch.size()) == 1 \
                                   else (n,) + y_batch.size()[1:]
-
-                # loss
-                batch_loss = self.loss(y_batch_pred, y_batch)
-                total_loss += batch_loss.item()
 
                 # Infer prediction shape
                 if r == 0:
@@ -404,6 +451,7 @@ class Learner():
             accumulation_steps (int, optional): steps for gradient accumulation. If it
                 is 1, gradients are not accumulated. Default: 1.
         """
+        self._check_loader()
         curr_opt_state = self.optimizer.state_dict()
         self.optimizer.load_state_dict(self.state['optimizer'])
         try:
@@ -490,6 +538,10 @@ class Learner():
         load model
         """
         self.model.load_state_dict(torch.load(path))
+        self.model.to(self.device)
+        if self.multigpu: 
+            self.model = torch.nn.DataParallel(self.model, device_ids=self.gpus)
+
         return
 
 
@@ -501,3 +553,15 @@ class Learner():
             if hasattr(m, 'reset_parameters'): m.reset_parameters()
         self.model.apply(weight_reset)
         return
+
+
+    def _check_loader(self, use_val=False):
+        if use_val:
+            loader_name = 'val_loader'
+            loader = self.val_loader
+        else:
+            loader_name = 'train_loader'
+            loader = self.train_loader
+
+        if loader is None:
+            raise ValueError('%s is required for this method' % (loader_name))
