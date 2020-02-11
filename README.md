@@ -38,7 +38,8 @@ learer.load('/tmp/mymodel')
 
 
 #### `TorchFit` Training Loop
-![torchfit training loop](./torchfit_progress.gif "TorchFit Training Loop")
+<img src="https://github.com/amaiya/torchfit/raw/master/images/torch_progress.gif" width="600">
+
 
 
 
