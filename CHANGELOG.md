@@ -7,6 +7,18 @@ Most recent releases are shown at the top. Each release shows:
 - **Fixed**: Bug fixes that don't change documented behaviour
 
 
+## 0.2.4 (2020-02-11)
+
+### New:
+- N/A
+
+### Changed:
+- fixed image link in README
+
+### Fixed:
+- N/A
+
+
 ## 0.2.3 (2020-02-11)
 
 ### New:
