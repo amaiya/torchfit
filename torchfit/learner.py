@@ -482,6 +482,10 @@ class Learner():
             accumulation_steps (int, optional): steps for gradient accumulation. If it
                 is 1, gradients are not accumulated. Default: 1.
         """
+        if type(self).__name__ != 'Learner':
+            warnings.warn('currently_supported: find_lr is not currently supported for '+
+                          'subclasses of Learner')
+            return
         self._check_loader()
         curr_opt_state = self.optimizer.state_dict()
         self.optimizer.load_state_dict(self.state['optimizer'])
