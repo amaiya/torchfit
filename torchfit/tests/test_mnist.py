@@ -72,9 +72,9 @@ class TestMNIST(TestCase):
         dummy_lr = 100
         model = Net()
         optimizer = optim.Adam(model.parameters())
-        loss = nn.CrossEntropyLoss()
+        criterion = nn.CrossEntropyLoss()
         learner = torchfit.Learner(model, self.trn, val_loader=self.val, 
-                                   optimizer=optimizer, loss=loss, metrics=[accuracy], 
+                                   optimizer=optimizer, criterion=criterion, metrics=[accuracy], 
                                    seed=SEED, device=DEVICE)
         scheduler = torch.optim.lr_scheduler.CyclicLR(learner.optimizer, 
                                                      base_lr=lr/10, 
