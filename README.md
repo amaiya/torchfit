@@ -37,7 +37,9 @@ learner.save('/tmp/mymodel')
 learer.load('/tmp/mymodel')
 ```
 
-### For more information, see the [Tutorial Notebook](https://github.com/amaiya/torchfit/blob/master/examples/tutorial.ipynb).
+### For more information, see the the following notebooks:
+- [Quickstart with MNIST](https://github.com/amaiya/torchfit/blob/master/examples/quickstart-mnist.ipynb):  quickstart notebook to get you up and running
+- [Tutorial Notebook](https://github.com/amaiya/torchfit/blob/master/examples/tutorial.ipynb):  tutorial notebook with more details that uses text classification as an example problem
 
 
 ## Installation
