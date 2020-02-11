@@ -192,8 +192,9 @@ class Learner():
 
 
 
-    def fit(self, lr, epochs=1, 
-            schedulers=None, accumulation_steps=1):
+    def _fit(self, lr, epochs=1, 
+             schedulers=None, accumulation_steps=1,
+             internal_flag=False):
         """
         train the model
         Args:
@@ -202,10 +203,13 @@ class Learner():
           schedulers(list):  list of LR schedulers.  Default is None.
           accumulation_steps(int): number of batches for gradient accumulation.
                                    default:1
+          internal_flag(bool): Set to True by methods when invoked
+                               by other methods in Learner
         Returns:
           History:  History object containing training history
         """
         self._check_loader()
+        opt = self.optimizer
 
         # history
         self.hist = History()
@@ -227,14 +231,13 @@ class Learner():
         
 
         # set learning rate        
-        opt = self.optimizer
-        for g in opt.param_groups:
-            g['lr'] = lr
-        #if schedulers is not None:
-        #    for s in schedulers: 
-        #        # needed for schedulers like CosineAnnealingWarmRestarts
-        #        if hasattr(s, 'base_lrs'): s.base_lrs=[lr]
-
+        if schedulers is None:
+            for g in opt.param_groups:
+                g['lr'] = lr
+        else:
+            if not internal_flag:
+                warnings.warn('lr parameter will be ignored - using lr setting in ' +\
+                              'supplied scheduler and/or optimizer')
 
         # training loop
         logs = []
@@ -313,6 +316,23 @@ class Learner():
         return self.hist
 
 
+    def fit(self, lr, epochs=1, 
+            schedulers=None, accumulation_steps=1):
+        """
+        train the model
+        Args:
+          lr (float):  learning rate
+          epochs (int):  number of epochs.  default:1
+          schedulers(list):  list of LR schedulers.  Default is None.
+          accumulation_steps(int): number of batches for gradient accumulation.
+                                   default:1
+        Returns:
+          History:  History object containing training history
+        """
+        self._fit(lr, epochs=epochs, schedulers=schedulers, accumulation_steps=accumulation_steps)
+
+
+
     def fit_onecycle(self, lr, epochs=1, start_pct=0.25, accumulation_steps=1):
         """
         Train using Leslie Smith's 1cycle policy (https://arxiv.org/pdf/1803.09820.pdf)
@@ -334,7 +354,8 @@ class Learner():
                                                 cycle_momentum=False, 
                                                 step_size_up=math.floor(epochs*len(trn)*start_pct),
                                                 step_size_down=math.floor(epochs*len(trn)*end_pct))
-        return self.fit(lr, epochs, schedulers=[scheduler], accumulation_steps=accumulation_steps)
+        return self._fit(lr, epochs, schedulers=[scheduler], 
+                        accumulation_steps=accumulation_steps, internal_flag=True)
 
 
 
