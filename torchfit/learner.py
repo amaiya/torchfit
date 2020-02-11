@@ -36,7 +36,7 @@ class Learner():
 
     
     def __init__(self, model, train_loader=None, val_loader=None,
-                 loss=None,        # default is crossentropy
+                 criterion=None,        # default is crossentropy
                  optimizer=None,    # default sgd
                  metrics=[accuracy], # default is accuracy
                  seed=None,
@@ -52,7 +52,7 @@ class Learner():
           model (nn.Module): the network
           train_loader(DataLoader):  training dataset
           val_loader(DataLoader):  validation dataset
-          loss(nn._Loss): loss function. Default is CrossEntropy if None.
+          criterion(nn._Loss): loss function. Default is CrossEntropy if None.
           optimizer(Optimizer):  optimizer.  Default is SGD if None.
           metrics(list): list of functions for computing metrics. Default is accuracy.
           seed(int): random seed
@@ -95,8 +95,8 @@ class Learner():
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.verbose = verbose
-        self.loss = loss
-        if self.loss is None: self.loss = DEFAULT_LOSS
+        self.criterion = criterion
+        if self.criterion is None: self.criterion = DEFAULT_LOSS
         self.optimizer = optimizer
         if self.optimizer is None:
             opt = DEFAULT_OPTIMIZER
@@ -155,7 +155,7 @@ class Learner():
         """
         subclass should override for non-standard scenarios
         """
-        return self.loss(outputs, targets)
+        return self.criterion(outputs, targets)
 
 
     def train_step(self, batch, batch_idx):
@@ -435,7 +435,7 @@ class Learner():
                 y_batch = dct['targets']
                 y_batch_pred = dct['outputs']
                 batch_loss = dct['loss']
-                batch_loss = self.loss(y_batch_pred, y_batch)
+                batch_loss = self.criterion(y_batch_pred, y_batch)
                 total_loss += batch_loss.item()
 
                 # shapes
@@ -517,7 +517,7 @@ class Learner():
         val_loader = None
         if use_val_loss:
             val_loader = self.val_loader
-        lr_finder = LRFinder(self.model, opt, self.loss, device=self.device)
+        lr_finder = LRFinder(self.model, opt, self.criterion, device=self.device)
 
         import io
         from contextlib import redirect_stdout

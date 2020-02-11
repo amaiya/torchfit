@@ -92,7 +92,7 @@ class TestTorchFit(TestCase):
         optimizer = torch.optim.SGD(model.parameters(), lr=1.0)
         criterion = torch.nn.CrossEntropyLoss()
         learner = torchfit.Learner(model, trn, val_loader=val, 
-                                   optimizer=optimizer, loss=criterion, metrics=[accuracy], 
+                                   optimizer=optimizer, criterion=criterion, metrics=[accuracy], 
                                    seed=SEED, device=DEVICE)
 
         hist = learner.fit_onecycle(lr, 1)

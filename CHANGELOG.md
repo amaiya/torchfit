@@ -7,6 +7,18 @@ Most recent releases are shown at the top. Each release shows:
 - **Fixed**: Bug fixes that don't change documented behaviour
 
 
+## 0.2.3 (2020-02-11)
+
+### New:
+- N/A
+
+### Changed:
+- changed `loss` to `criterion` in `Learner`
+
+### Fixed:
+- N/A
+
+
 ## 0.2.2 (2020-02-11)
 
 ### New:
