@@ -483,7 +483,7 @@ class Learner():
                 is 1, gradients are not accumulated. Default: 1.
         """
         if type(self).__name__ != 'Learner':
-            warnings.warn('currently_supported: find_lr is not currently supported for '+
+            warnings.warn('currently_unsupported: find_lr is not currently supported for '+
                           'subclasses of Learner')
             return
         self._check_loader()
