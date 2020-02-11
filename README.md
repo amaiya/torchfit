@@ -36,7 +36,9 @@ learner.save('/tmp/mymodel')
 learer.load('/tmp/mymodel')
 ```
 
+<kbd>
 ![torchfit training loop](./torchfit_progress.gif "TorchFit Training Loop")
+</kbd>
 
 
 
