@@ -230,6 +230,11 @@ class Learner():
         opt = self.optimizer
         for g in opt.param_groups:
             g['lr'] = lr
+        #if schedulers is not None:
+        #    for s in schedulers: 
+        #        # needed for schedulers like CosineAnnealingWarmRestarts
+        #        if hasattr(s, 'base_lrs'): s.base_lrs=[lr]
+
 
         # training loop
         logs = []
@@ -280,8 +285,9 @@ class Learner():
                             last_lr = schedulers[0].get_last_lr()
                         except:
                            last_lr = schedulers[0].get_lr()
-                           #last_lr = self.optimizer.param_groups[0]['lr']
-                        self.hist.update_batch_log('lrs', last_lr)
+                    else:
+                        last_lr = self.optimizer.param_groups[0]['lr']
+                    self.hist.update_batch_log('lrs', last_lr)
 
 
             # Run metrics
@@ -307,7 +313,7 @@ class Learner():
         return self.hist
 
 
-    def fit_onecycle(self, lr, epochs=1, start_pct=0.25):
+    def fit_onecycle(self, lr, epochs=1, start_pct=0.25, accumulation_steps=1):
         """
         Train using Leslie Smith's 1cycle policy (https://arxiv.org/pdf/1803.09820.pdf)
         Args:
@@ -317,6 +323,8 @@ class Learner():
                             Using <0.5 slants triangle to left as proposed by Howard and 
                             Ruder (2018): https://arxiv.org/abs/1801.06146
                             Default is 0.25.
+          accumulation_steps(int): number of batches for gradient accumulation.
+                                   default:1
         """
         end_pct = 1-start_pct
         trn = self.train_loader
@@ -326,7 +334,7 @@ class Learner():
                                                 cycle_momentum=False, 
                                                 step_size_up=math.floor(epochs*len(trn)*start_pct),
                                                 step_size_down=math.floor(epochs*len(trn)*end_pct))
-        return self.fit(lr, epochs, schedulers=[scheduler])
+        return self.fit(lr, epochs, schedulers=[scheduler], accumulation_steps=accumulation_steps)
 
 
 
