@@ -103,7 +103,7 @@ class TestTorchFit(TestCase):
 
         outputs, targets = learner.predict(tst, return_targets=True)
         outputs = np.argmax(outputs, axis=-1)
-        self.assertGreater(np.mean(targets == outputs), 0.88)
+        self.assertGreater(np.mean(targets == outputs), 0.86)
 
         new_file, tmpfile = tempfile.mkstemp()
         learner.save(tmpfile)
@@ -114,7 +114,7 @@ class TestTorchFit(TestCase):
         learner.load(tmpfile)
         outputs, targets = learner.predict(tst, return_targets=True)
         outputs = np.argmax(outputs, axis=-1)
-        self.assertGreater(np.mean(targets == outputs), 0.88)
+        self.assertGreater(np.mean(targets == outputs), 0.86)
 
 
         import re

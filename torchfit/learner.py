@@ -193,7 +193,8 @@ class Learner():
 
 
     def _fit(self, lr, epochs=1, 
-             schedulers=None, accumulation_steps=1,
+             schedulers=None, accumulation_steps=1, 
+             gradient_clip_val=0,
              internal_flag=False):
         """
         train the model
@@ -203,6 +204,7 @@ class Learner():
           schedulers(list):  list of LR schedulers.  Default is None.
           accumulation_steps(int): number of batches for gradient accumulation.
                                    default:1
+          gradient_clip_val(int): gradient clipping value.  default:0 (no clipping)
           internal_flag(bool): Set to True by methods when invoked
                                by other methods in Learner
         Returns:
@@ -219,15 +221,14 @@ class Learner():
             from apex import amp
 
         # check schedulers
-        schedulers = schedulers
+        unk_schedulers=[]
         if schedulers is not None:
             if type(schedulers) != list: raise ValueError('schedulers must be list of _LRScheduler instances')
-            unk_schedulers = []
             for s in schedulers:
                 if type(s).__name__ not in SCHED_LOCATIONS:
                     unk_schedulers.append(type(s).__name__)
-            if len(unk_schedulers) > 0:
-                raise ValueError('unknown schedulers  were supplied: %s'  % (' '.join(unk_schedulers)))
+            #if len(unk_schedulers) > 0:
+                #raise ValueError('unknown schedulers  were supplied: %s'  % (' '.join(unk_schedulers)))
         
 
         # set learning rate        
@@ -267,6 +268,14 @@ class Learner():
                     batch_loss.backward()
 
                 if (batch_i+1) % accumulation_steps == 0:
+
+                    # apply gradient clipping
+                    if self.use_amp and gradient_clip_val > 0:
+                        torch.nn.utils.clip_grad_norm_(amp.master_params(opt), gradient_clip_val)
+                    elif not self.use_amp and gradient_clip_val > 0:
+                        torch.nn.utils.clip_grad_norm_(self.model.parameters(), gradient_clip_val)
+
+                    # optimizer step
                     opt.step()
                     opt.zero_grad()
 
@@ -280,7 +289,8 @@ class Learner():
                     # lr schedule
                     if schedulers:
                         for s in schedulers:
-                            if SCHED_LOCATIONS[type(s).__name__] == 'batchlevel': s.step()
+                            if SCHED_LOCATIONS.get(type(s).__name__, None) is None: s.step()
+                            elif SCHED_LOCATIONS[type(s).__name__] == 'batchlevel': s.step()
 
                     # update lr log
                     if schedulers:
@@ -314,7 +324,7 @@ class Learner():
             # LR schedule
             if schedulers:
                 for s in schedulers:
-                    if SCHED_LOCATIONS[type(s).__name__] != 'batchlevel': s.step()
+                    if SCHED_LOCATIONS[type(s).__name__] == 'epochlevel': s.step()
         return self.hist
 
 
@@ -331,7 +341,7 @@ class Learner():
         Returns:
           History:  History object containing training history
         """
-        self._fit(lr, epochs=epochs, schedulers=schedulers, accumulation_steps=accumulation_steps)
+        return self._fit(lr, epochs=epochs, schedulers=schedulers, accumulation_steps=accumulation_steps)
 
 
 
