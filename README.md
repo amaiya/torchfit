@@ -38,7 +38,7 @@ learer.load('/tmp/mymodel')
 
 ### For more information, see the the following notebooks:
 - [Quickstart with MNIST](https://github.com/amaiya/torchfit/blob/master/examples/quickstart-mnist.ipynb):  quickstart notebook to get you up and running
-- [Tutorial Notebook](https://github.com/amaiya/torchfit/blob/master/examples/tutorial.ipynb):  tutorial notebook with more details that uses text classification as the example problem
+- [Tutorial Notebook](https://github.com/amaiya/torchfit/blob/master/examples/tutorial.ipynb):  tutorial notebook covering more details and using the model and data from the [Pytorch text classification](https://pytorch.org/tutorials/beginner/text_sentiment_ngrams_tutorial.html)
 
 
 ## Installation
