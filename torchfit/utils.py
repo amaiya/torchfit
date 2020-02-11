@@ -1,6 +1,11 @@
-import numpy as np
+import os
 import sys
 from collections import OrderedDict
+
+from matplotlib import pyplot as plt
+from PIL import Image
+import numpy as np
+
 
 
 class History():
@@ -33,6 +38,21 @@ class History():
     def has_batch_key(self, key):
         return key in self.batch_log
 
+
+def show_image(img_path):
+    if not os.path.isfile(img_path):
+        raise ValueError('%s is not valid file' % (img_path))
+    img = plt.imread(img_path)
+    out = plt.imshow(img)
+    return out
+
+
+
+def load_image( infilename ) :
+    img = Image.open( infilename )
+    img.load()
+    data = np.asarray( img, dtype="int32" )
+    return data
 
 #-------------------------------------------------------------------------------
 # The ProgressBar, log_to_message, and add_metrics_to_log functions

@@ -151,11 +151,11 @@ class Learner():
         return self.model(x)
 
 
-    def compute_loss(self, output, targets):
+    def compute_loss(self, outputs, targets):
         """
         subclass should override for non-standard scenarios
         """
-        return self.loss(output, targets)
+        return self.loss(outputs, targets)
 
 
     def train_step(self, batch, batch_idx):
@@ -163,7 +163,7 @@ class Learner():
         subclass should override for non-standard training steps
         """
         # extract data from batch
-        if type(batch[0]) == list:
+        if isinstance(batch[0], (list, tuple)):
             X_batch = [x.to(self.device) for x in batch[0]]
         else:
             X_batch = batch[0].to(self.device) 
@@ -174,7 +174,7 @@ class Learner():
 
         # compute loss
         batch_loss = self.compute_loss(outputs, y_batch)
-        return {'loss': batch_loss, 'x':X_batch, 'targets':y_batch, 'outputs': outputs}
+        return {'loss': batch_loss, 'targets':y_batch, 'outputs': outputs}
 
 
     def validation_step(self, batch, batch_idx):
@@ -192,8 +192,10 @@ class Learner():
 
 
 
-    def fit(self, lr, epochs=1, 
-            schedulers=None, accumulation_steps=1):
+    def _fit(self, lr, epochs=1, 
+             schedulers=None, accumulation_steps=1, 
+             gradient_clip_val=0,
+             internal_flag=False):
         """
         train the model
         Args:
@@ -202,10 +204,14 @@ class Learner():
           schedulers(list):  list of LR schedulers.  Default is None.
           accumulation_steps(int): number of batches for gradient accumulation.
                                    default:1
+          gradient_clip_val(int): gradient clipping value.  default:0 (no clipping)
+          internal_flag(bool): Set to True by methods when invoked
+                               by other methods in Learner
         Returns:
           History:  History object containing training history
         """
         self._check_loader()
+        opt = self.optimizer
 
         # history
         self.hist = History()
@@ -215,21 +221,24 @@ class Learner():
             from apex import amp
 
         # check schedulers
-        schedulers = schedulers
+        unk_schedulers=[]
         if schedulers is not None:
             if type(schedulers) != list: raise ValueError('schedulers must be list of _LRScheduler instances')
-            unk_schedulers = []
             for s in schedulers:
                 if type(s).__name__ not in SCHED_LOCATIONS:
                     unk_schedulers.append(type(s).__name__)
-            if len(unk_schedulers) > 0:
-                raise ValueError('unknown schedulers  were supplied: %s'  % (' '.join(unk_schedulers)))
+            #if len(unk_schedulers) > 0:
+                #raise ValueError('unknown schedulers  were supplied: %s'  % (' '.join(unk_schedulers)))
         
 
         # set learning rate        
-        opt = self.optimizer
-        for g in opt.param_groups:
-            g['lr'] = lr
+        if schedulers is None:
+            for g in opt.param_groups:
+                g['lr'] = lr
+        else:
+            if not internal_flag:
+                warnings.warn('lr parameter will be ignored - using lr setting in ' +\
+                              'supplied scheduler and/or optimizer')
 
         # training loop
         logs = []
@@ -248,7 +257,6 @@ class Learner():
                 self.model.train()
 
                 dct = self.train_step(batch_data, batch_i)
-                X_batch = dct['x']
                 y_batch = dct['targets']
                 y_batch_pred = dct['outputs']
                 batch_loss = dct['loss']
@@ -260,6 +268,14 @@ class Learner():
                     batch_loss.backward()
 
                 if (batch_i+1) % accumulation_steps == 0:
+
+                    # apply gradient clipping
+                    if self.use_amp and gradient_clip_val > 0:
+                        torch.nn.utils.clip_grad_norm_(amp.master_params(opt), gradient_clip_val)
+                    elif not self.use_amp and gradient_clip_val > 0:
+                        torch.nn.utils.clip_grad_norm_(self.model.parameters(), gradient_clip_val)
+
+                    # optimizer step
                     opt.step()
                     opt.zero_grad()
 
@@ -273,7 +289,8 @@ class Learner():
                     # lr schedule
                     if schedulers:
                         for s in schedulers:
-                            if SCHED_LOCATIONS[type(s).__name__] == 'batchlevel': s.step()
+                            if SCHED_LOCATIONS.get(type(s).__name__, None) is None: s.step()
+                            elif SCHED_LOCATIONS[type(s).__name__] == 'batchlevel': s.step()
 
                     # update lr log
                     if schedulers:
@@ -281,8 +298,11 @@ class Learner():
                             last_lr = schedulers[0].get_last_lr()
                         except:
                            last_lr = schedulers[0].get_lr()
-                           #last_lr = self.optimizer.param_groups[0]['lr']
-                        self.hist.update_batch_log('lrs', last_lr)
+                    else:
+                        last_lr = self.optimizer.param_groups[0]['lr']
+                    if isinstance(last_lr, (list, tuple, np.ndarray)):
+                        last_lr = last_lr[0]
+                    self.hist.update_batch_log('lrs', last_lr)
 
 
             # Run metrics
@@ -304,11 +324,28 @@ class Learner():
             # LR schedule
             if schedulers:
                 for s in schedulers:
-                    if SCHED_LOCATIONS[type(s).__name__] != 'batchlevel': s.step()
+                    if SCHED_LOCATIONS[type(s).__name__] == 'epochlevel': s.step()
         return self.hist
 
 
-    def fit_onecycle(self, lr, epochs=1, start_pct=0.25):
+    def fit(self, lr, epochs=1, 
+            schedulers=None, accumulation_steps=1):
+        """
+        train the model
+        Args:
+          lr (float):  learning rate
+          epochs (int):  number of epochs.  default:1
+          schedulers(list):  list of LR schedulers.  Default is None.
+          accumulation_steps(int): number of batches for gradient accumulation.
+                                   default:1
+        Returns:
+          History:  History object containing training history
+        """
+        return self._fit(lr, epochs=epochs, schedulers=schedulers, accumulation_steps=accumulation_steps)
+
+
+
+    def fit_onecycle(self, lr, epochs=1, start_pct=0.25, accumulation_steps=1):
         """
         Train using Leslie Smith's 1cycle policy (https://arxiv.org/pdf/1803.09820.pdf)
         Args:
@@ -318,6 +355,8 @@ class Learner():
                             Using <0.5 slants triangle to left as proposed by Howard and 
                             Ruder (2018): https://arxiv.org/abs/1801.06146
                             Default is 0.25.
+          accumulation_steps(int): number of batches for gradient accumulation.
+                                   default:1
         """
         end_pct = 1-start_pct
         trn = self.train_loader
@@ -327,11 +366,12 @@ class Learner():
                                                 cycle_momentum=False, 
                                                 step_size_up=math.floor(epochs*len(trn)*start_pct),
                                                 step_size_down=math.floor(epochs*len(trn)*end_pct))
-        return self.fit(lr, epochs, schedulers=[scheduler])
+        return self._fit(lr, epochs, schedulers=[scheduler], 
+                        accumulation_steps=accumulation_steps, internal_flag=True)
 
 
 
-    def predict(self, data_loader):
+    def predict(self, data_loader, return_targets=False):
         """Generates output predictions for the input samples.
 
         Args:
@@ -339,10 +379,14 @@ class Learner():
         Returns:      
           np.ndarray:  NumPy array of predictions
         """
-        preds, _, _ = self._predict(data_loader)
+        preds, _, targets = self._predict(data_loader)
         if self.device != 'cpu':
             preds = preds.cpu().detach()
-        return preds.numpy()
+            targets = targets.cpu().detach()
+        if return_targets:
+            return (preds.numpy(), targets.numpy())
+        else:
+            return preds.numpy()
 
 
     def predict_example(self, data, preproc_fn=None, labels=[]):
@@ -388,7 +432,6 @@ class Learner():
                     dct = self.test_step(batch_data, batch_i)
                 else:
                     dct = self.validation_step(batch_data, batch_i)
-                X_batch = dct['x']
                 y_batch = dct['targets']
                 y_batch_pred = dct['outputs']
                 batch_loss = dct['loss']
@@ -451,6 +494,10 @@ class Learner():
             accumulation_steps (int, optional): steps for gradient accumulation. If it
                 is 1, gradients are not accumulated. Default: 1.
         """
+        if type(self).__name__ != 'Learner':
+            warnings.warn('currently_unsupported: find_lr is not currently supported for '+
+                          'subclasses of Learner')
+            return
         self._check_loader()
         curr_opt_state = self.optimizer.state_dict()
         self.optimizer.load_state_dict(self.state['optimizer'])
@@ -460,7 +507,8 @@ class Learner():
         except: pass
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
-            from torch_lr_finder import LRFinder
+            #from torch_lr_finder import LRFinder
+            from .lr_finder import LRFinder
 
         opt = self.optimizer
 

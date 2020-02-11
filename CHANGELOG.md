@@ -7,6 +7,20 @@ Most recent releases are shown at the top. Each release shows:
 - **Fixed**: Bug fixes that don't change documented behaviour
 
 
+## 0.2.2 (2020-02-11)
+
+### New:
+- added support for gradient clipping
+
+### Changed:
+- re-factored steps in training to support subclassing `Learner` for custom overrides
+- added warning about learning rate setting when user-configured scheduler is supplied to `fit`
+- `fit` accepts custom learning rate schedulers
+
+### Fixed:
+- N/A
+
+
 ## 0.2.1 (2020-02-07)
 
 ### New:
