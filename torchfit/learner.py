@@ -290,6 +290,8 @@ class Learner():
                            last_lr = schedulers[0].get_lr()
                     else:
                         last_lr = self.optimizer.param_groups[0]['lr']
+                    if isinstance(last_lr, (list, tuple, np.ndarray)):
+                        last_lr = last_lr[0]
                     self.hist.update_batch_log('lrs', last_lr)
 
 
