@@ -435,7 +435,6 @@ class Learner():
                 y_batch = dct['targets']
                 y_batch_pred = dct['outputs']
                 batch_loss = dct['loss']
-                batch_loss = self.criterion(y_batch_pred, y_batch)
                 total_loss += batch_loss.item()
 
                 # shapes
