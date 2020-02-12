@@ -93,7 +93,7 @@ or this...
 
 
 #### Resetting Weights of Model
-The weights of the neural network model can be easily reset using `learner.reset_weights()`. 
+```learner.reset_weights()``` 
 
 
 #### Saving/Loading Model
