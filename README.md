@@ -62,7 +62,7 @@ outputs = learner.predict(test_loader)
 outputs, targets = learner.predict(test_loader, return_targets=True)
 
 text = 'Shares of IBM rose today.'
-learner.predict_example(text, preproc_fn=preprocess, labels=labels)
+predicted_label = learner.predict_example(text, preproc_fn=preprocess, labels=labels)
 ```
 
 
