@@ -128,7 +128,6 @@ class Learner():
             print("using mixed precision training (EXPERIMENTAL)")
             try:
                 self.model, self.optimizer = amp.initialize(self.model, self.optimizer, opt_level=amp_level)
-                print('here')
             except RuntimeError as e:
                 msg = """
                 You may have already amp.initialized this model and optimizer.
