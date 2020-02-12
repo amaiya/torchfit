@@ -41,11 +41,75 @@ learer.load('/tmp/mymodel')
 <img src="https://github.com/amaiya/torchfit/raw/develop/images/torchfit_progress.gif" width="800">
 
 
-
-
-### For more information, see the the following notebooks:
+## Tutorials and Examples
 - **[Quickstart with MNIST](https://github.com/amaiya/torchfit/blob/master/examples/quickstart-mnist.ipynb):**  quickstart notebook to get you up and running
 - **[Tutorial Notebook](https://github.com/amaiya/torchfit/blob/master/examples/tutorial.ipynb):**  tutorial notebook using the same model and data employed in the [PyTorch text classification tutorial](https://pytorch.org/tutorials/beginner/text_sentiment_ngrams_tutorial.html)
+
+
+##  Features
+
+#### Learning Rate Finder
+```learner.find_lr()```
+
+
+#### A `fit` method for Training
+```
+# Examples
+learner.fit(lr, epochs)
+learner.fit_onecycle(lr, epochs)
+learner.fit(lr, epochs, schedulers=[scheduler])
+```
+
+#### Easy-to-Execute Testing and Predictions
+```
+# Examples
+outputs = learner.predict(test_loader)
+outputs, targets = learner.predict(test_loader, return_targets=True)
+
+text = 'Shares of IBM rose today.'
+predicted_label = learner.predict_example(text, preproc_fn=preprocess, labels=labels)
+```
+
+
+#### Gradient Accumulation
+```learner.fit_onecycle(lr, 1, accumulation_steps=8)```
+
+
+#### Gradient Clipping
+```learner.fit_onecycle(lr, 1, gradient_clip_val=1)```
+
+
+#### Mixed Precision Training
+```torchfit.Learner(model, train_loader, val_loader=val_loader, use_amp=True, amp_level='O2')```
+
+#### Multi-GPU Training and GPU Selection
+
+To train on first two GPUs (0 and 1):
+
+```learner = torchfit.Learner(model, train_loader, val_loader=test_loader, gpus=[0,1])```
+
+To train only on the second GPU, one can do either this:
+
+```learner = torchfit.Learner(model, train_loader, val_loader=test_loader, gpus=[1])```
+
+or this...
+
+```learner = torchfit.Learner(model, train_loader, val_loader=test_loader, device='cuda:1')```
+
+
+#### Resetting Weights of Model
+```learner.reset_weights()``` 
+
+
+#### Saving/Loading Model
+```
+learner.save('/tmp/mymodel')
+learner.load('/tmp/mymodel')
+```
+
+
+
+
 
 
 ## Installation
