@@ -41,7 +41,29 @@ learer.load('/tmp/mymodel')
 <img src="https://github.com/amaiya/torchfit/raw/develop/images/torchfit_progress.gif" width="800">
 
 
-## Other Features
+##  Features
+
+#### Learning Rate Finder
+```learner.find_lr()```
+
+
+#### A `fit` method for Training
+```
+# Examples
+learner.fit(lr, epochs)
+learner.fit_onecycle(lr, epochs)
+learner.fit(lr, epochs, schedulers=[scheduler])
+```
+
+#### Easy-to-Execute Testing and Predictions
+```
+# Examples
+outputs = learner.predict(test_loader)
+outputs, targets = learner.predict(test_loader, return_targets=True)
+text = 'Iran continues its nuclear development despite sanctions by the United Nations.'
+learner.predict_example(text, preproc_fn=preprocess, labels=labels)
+```
+
 
 #### Gradient Accumulation
 ```learner.fit_onecycle(lr, 1, accumulation_steps=8)```
