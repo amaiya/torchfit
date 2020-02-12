@@ -128,7 +128,6 @@ class Learner():
             print("using mixed precision training (EXPERIMENTAL)")
             try:
                 self.model, self.optimizer = amp.initialize(self.model, self.optimizer, opt_level=amp_level)
-                print('here')
             except RuntimeError as e:
                 msg = """
                 You may have already amp.initialized this model and optimizer.
@@ -435,7 +434,6 @@ class Learner():
                 y_batch = dct['targets']
                 y_batch_pred = dct['outputs']
                 batch_loss = dct['loss']
-                batch_loss = self.criterion(y_batch_pred, y_batch)
                 total_loss += batch_loss.item()
 
                 # shapes
