@@ -41,6 +41,37 @@ learer.load('/tmp/mymodel')
 <img src="https://github.com/amaiya/torchfit/raw/develop/images/torchfit_progress.gif" width="800">
 
 
+## Features
+
+
+#### Resetting the Model
+The weights of the neural network model can be easily reset using `learner.reset_weights()`. 
+
+
+#### Gradient Accumulation
+```learner.fit_onecycle(lr, 1, accumulation_steps=8)```
+
+
+#### Gradient Clipping
+```learner.fit_onecycle(lr, 1, gradient_clip_val=1)```
+
+
+#### Mixed Precision Training
+```torchfit.Learner(model, train_loader, val_loader=val_loader, use_amp=True, amp_level='O2')```
+
+#### Multi-GPU Training and GPU Selection
+
+To train on first two GPUs (0 and 1):
+
+```learner = torchfit.Learner(model, train_loader, val_loader=test_loader, gpus=[0,1])```
+
+To train only on the second GPU, one can do either this:
+
+```learner = torchfit.Learner(model, train_loader, val_loader=test_loader, gpus=[1])```
+
+or this...
+
+```learner = torchfit.Learner(model, train_loader, val_loader=test_loader, device='cuda:1')```
 
 
 ### For more information, see the the following notebooks:

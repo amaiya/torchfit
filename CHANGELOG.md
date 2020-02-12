@@ -7,6 +7,18 @@ Most recent releases are shown at the top. Each release shows:
 - **Fixed**: Bug fixes that don't change documented behaviour
 
 
+## 0.2.5 (2020-02-12)
+
+### New:
+- N/A
+
+### Changed:
+- Edits to tutorial
+
+### Fixed:
+- removed extra loss computation during validation/testing
+
+
 ## 0.2.4 (2020-02-11)
 
 ### New:
