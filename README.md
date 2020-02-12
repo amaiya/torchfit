@@ -41,12 +41,7 @@ learer.load('/tmp/mymodel')
 <img src="https://github.com/amaiya/torchfit/raw/develop/images/torchfit_progress.gif" width="800">
 
 
-## Features
-
-
-#### Resetting the Model
-The weights of the neural network model can be easily reset using `learner.reset_weights()`. 
-
+## Other Features
 
 #### Gradient Accumulation
 ```learner.fit_onecycle(lr, 1, accumulation_steps=8)```
@@ -73,6 +68,16 @@ or this...
 
 ```learner = torchfit.Learner(model, train_loader, val_loader=test_loader, device='cuda:1')```
 
+
+#### Resetting Weights of Model
+The weights of the neural network model can be easily reset using `learner.reset_weights()`. 
+
+
+#### Saving/Loading Model
+```
+learner.save('/tmp/mymodel')
+learner.load('/tmp/mymodel')
+```
 
 ### For more information, see the the following notebooks:
 - **[Quickstart with MNIST](https://github.com/amaiya/torchfit/blob/master/examples/quickstart-mnist.ipynb):**  quickstart notebook to get you up and running
