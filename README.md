@@ -60,7 +60,8 @@ learner.fit(lr, epochs, schedulers=[scheduler])
 # Examples
 outputs = learner.predict(test_loader)
 outputs, targets = learner.predict(test_loader, return_targets=True)
-text = 'Iran continues its nuclear development despite sanctions by the United Nations.'
+
+text = 'Shares of IBM rose today.'
 learner.predict_example(text, preproc_fn=preprocess, labels=labels)
 ```
 
