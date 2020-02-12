@@ -41,6 +41,11 @@ learer.load('/tmp/mymodel')
 <img src="https://github.com/amaiya/torchfit/raw/develop/images/torchfit_progress.gif" width="800">
 
 
+## Tutorials and Examples
+- **[Quickstart with MNIST](https://github.com/amaiya/torchfit/blob/master/examples/quickstart-mnist.ipynb):**  quickstart notebook to get you up and running
+- **[Tutorial Notebook](https://github.com/amaiya/torchfit/blob/master/examples/tutorial.ipynb):**  tutorial notebook using the same model and data employed in the [PyTorch text classification tutorial](https://pytorch.org/tutorials/beginner/text_sentiment_ngrams_tutorial.html)
+
+
 ##  Features
 
 #### Learning Rate Finder
@@ -102,9 +107,9 @@ learner.save('/tmp/mymodel')
 learner.load('/tmp/mymodel')
 ```
 
-### For more information, see the the following notebooks:
-- **[Quickstart with MNIST](https://github.com/amaiya/torchfit/blob/master/examples/quickstart-mnist.ipynb):**  quickstart notebook to get you up and running
-- **[Tutorial Notebook](https://github.com/amaiya/torchfit/blob/master/examples/tutorial.ipynb):**  tutorial notebook using the same model and data employed in the [PyTorch text classification tutorial](https://pytorch.org/tutorials/beginner/text_sentiment_ngrams_tutorial.html)
+
+
+
 
 
 ## Installation
